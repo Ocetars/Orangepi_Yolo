@@ -1,17 +1,14 @@
 import cv2
 import time
 from rknnpool import rknnPoolExecutor
-# 图像处理函数，实际应用过程中需要自行修改
 from func import myFunc
-from func import draw
 
-cap = cv2.VideoCapture('./REC3.mp4')
-# cap = cv2.VideoCapture('./720p60hz.mp4')
+cap = cv2.VideoCapture('./REC_for_testing.mp4')
 # cap = cv2.VideoCapture(0)
 
+# 模型路径
 modelPath = "./rknnModel/GXv5s_RK3588_i8.rknn"
-
-# 线程数, 增大可提高帧率
+# 线程数
 TPEs = 3
 # 初始化rknn池
 pool = rknnPoolExecutor(
