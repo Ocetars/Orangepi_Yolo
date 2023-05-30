@@ -1,4 +1,4 @@
-#以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
+# 以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
 import cv2
 import numpy as np
 import time
@@ -13,10 +13,11 @@ OBJ_THRESH, NMS_THRESH, IMG_SIZE = 0.25, 0.45, 640
 #            "pottedplant", "bed", "diningtable", "toilet ", "tvmonitor", "laptop	", "mouse	", "remote ", "keyboard ", "cell phone", "microwave ",
 #            "oven ", "toaster", "sink", "refrigerator ", "book", "clock", "vase", "scissors ", "teddy bear ", "hair drier", "toothbrush ")
 
-CLASSES = ('TakeOff', 'Car', 'Concentric', 'W', 'Centre')
+CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
 
 # def sigmoid(x):
 #     return 1 / (1 + np.exp(-x))
+
 
 def xywh2xyxy(x):
     # Convert [x, y, w, h] to [x1, y1, x2, y2]
@@ -29,7 +30,6 @@ def xywh2xyxy(x):
 
 
 def process(input, mask, anchors):
-
     anchors = [anchors[i] for i in mask]
     grid_h, grid_w = map(int, input.shape[0:2])
 
@@ -38,7 +38,7 @@ def process(input, mask, anchors):
 
     box_class_probs = input[..., 5:]
 
-    box_xy = input[..., :2] *2 - 0.5
+    box_xy = input[..., :2] * 2 - 0.5
 
     col = np.tile(np.arange(0, grid_w), grid_w).reshape(-1, grid_w)
     row = np.tile(np.arange(0, grid_h).reshape(-1, 1), grid_h)
@@ -46,9 +46,9 @@ def process(input, mask, anchors):
     row = row.reshape(grid_h, grid_w, 1, 1).repeat(3, axis=-2)
     grid = np.concatenate((col, row), axis=-1)
     box_xy += grid
-    box_xy *= int(IMG_SIZE/grid_h)
+    box_xy *= int(IMG_SIZE / grid_h)
 
-    box_wh = pow(input[..., 2:4] *2, 2)
+    box_wh = pow(input[..., 2:4] * 2, 2)
     box_wh = box_wh * anchors
 
     return np.concatenate((box_xy, box_wh), axis=-1), box_confidence, box_class_probs
@@ -80,7 +80,11 @@ def filter_boxes(boxes, box_confidences, box_class_probs):
     classes = np.argmax(box_class_probs, axis=-1)
     _class_pos = np.where(class_max_score >= OBJ_THRESH)
 
-    return boxes[_class_pos], classes[_class_pos], (class_max_score * box_confidences)[_class_pos]
+    return (
+        boxes[_class_pos],
+        classes[_class_pos],
+        (class_max_score * box_confidences)[_class_pos],
+    )
 
 
 def nms_boxes(boxes, scores):
@@ -123,8 +127,17 @@ def nms_boxes(boxes, scores):
 
 def yolov5_post_process(input_data):
     masks = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
-    anchors = [[10, 13], [16, 30], [33, 23], [30, 61], [62, 45],
-               [59, 119], [116, 90], [156, 198], [373, 326]]
+    anchors = [
+        [10, 13],
+        [16, 30],
+        [33, 23],
+        [30, 61],
+        [62, 45],
+        [59, 119],
+        [116, 90],
+        [156, 198],
+        [373, 326],
+    ]
 
     boxes, classes, scores = [], [], []
     for input, mask in zip(input_data, masks):
@@ -158,7 +171,7 @@ def yolov5_post_process(input_data):
     return np.concatenate(nboxes), np.concatenate(nclasses), np.concatenate(nscores)
 
 
-def draw(image, boxes, scores, classes,label='W',threshold=0.6):
+def draw(image, boxes, scores, classes, label="W", threshold=0.6):
     # global center_x, center_y
     centers = []
     for box, score, cl in zip(boxes, scores, classes):
@@ -167,30 +180,36 @@ def draw(image, boxes, scores, classes,label='W',threshold=0.6):
             top, left, right, bottom = box
             # print('class: {}, score: {}'.format(CLASSES[cl], score))
             # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
-            top = int(top)# 左上x1
-            left = int(left)# 左上y1
-            right = int(right)# 右下x2
-            bottom = int(bottom)# 右下y2
+            top = int(top)  # 左上x1
+            left = int(left)  # 左上y1
+            right = int(right)  # 右下x2
+            bottom = int(bottom)  # 右下y2
             x1 = top
             y1 = left
             x2 = right
             y2 = bottom
             # 在图像上绘制目标框
-            cv2.rectangle(image,(top, left), (right,bottom), (255, 0, 0), 2)
-            
+            cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+
             # 计算目标框的中心坐标
-            center_x = (top + right) / 2
-            center_y = (left + bottom) / 2
+            center_x = (x1 + x2) / 2
+            center_y = (y1 + y2) / 2
             centers.append((center_x, center_y))
-            
+
             # 在图像上绘制目标中心
             cv2.circle(image, (int(center_x), int(center_y)), 2, (0, 255, 0), -1)
             # 在图像上绘制物体类别及置信度
-            cv2.putText(image, '{0} {1:.2f}'.format(CLASSES[cl], score),
-                        (top, left - 6),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6, (0, 0, 255), 2)
-    return centers 
+            cv2.putText(
+                image,
+                "{0} {1:.2f}".format(CLASSES[cl], score),
+                (x1, y1 - 6),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 0, 255),
+                2,
+            )
+    return centers
+
 
 def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
     shape = im.shape[:2]  # current shape [height, width]
@@ -201,8 +220,7 @@ def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
 
     ratio = r, r  # width, height ratios
     new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
-    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - \
-        new_unpad[1]  # wh padding
+    dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]  # wh padding
     dw /= 2  # divide padding into 2 sides
     dh /= 2
 
@@ -210,10 +228,12 @@ def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
         im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-    im = cv2.copyMakeBorder(im, top, bottom, left, right,
-                            cv2.BORDER_CONSTANT, value=color)  # add border
+    im = cv2.copyMakeBorder(
+        im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color
+    )  # add border
     return im
     # return im, ratio, (dw, dh)
+
 
 def myFunc(rknn_lite, IMG):
     IMG = cv2.cvtColor(IMG, cv2.COLOR_BGR2RGB)
@@ -223,10 +243,9 @@ def myFunc(rknn_lite, IMG):
     # IMG = cv2.resize(IMG, (IMG_SIZE, IMG_SIZE))
     outputs = rknn_lite.inference(inputs=[IMG])
 
-    input0_data = outputs[0].reshape([3, -1]+list(outputs[0].shape[-2:]))
-    input1_data = outputs[1].reshape([3, -1]+list(outputs[1].shape[-2:]))
-    input2_data = outputs[2].reshape([3, -1]+list(outputs[2].shape[-2:]))
-
+    input0_data = outputs[0].reshape([3, -1] + list(outputs[0].shape[-2:]))
+    input1_data = outputs[1].reshape([3, -1] + list(outputs[1].shape[-2:]))
+    input2_data = outputs[2].reshape([3, -1] + list(outputs[2].shape[-2:]))
     input_data = list()
     input_data.append(np.transpose(input0_data, (2, 3, 0, 1)))
     input_data.append(np.transpose(input1_data, (2, 3, 0, 1)))
@@ -237,5 +256,5 @@ def myFunc(rknn_lite, IMG):
     IMG = cv2.cvtColor(IMG, cv2.COLOR_RGB2BGR)
     if boxes is not None:
         centers = draw(IMG, boxes, scores, classes)
-        return IMG , centers
-    return IMG , None
+        return IMG, centers
+    return IMG, None
