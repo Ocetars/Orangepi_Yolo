@@ -172,7 +172,6 @@ def yolov5_post_process(input_data):
 
 
 def draw(image, boxes, scores, classes, label="W", threshold=0.6):
-    # global center_x, center_y
     centers = []
     for box, score, cl in zip(boxes, scores, classes):
         # 加入筛选条件，确定需要检测的目标
@@ -255,6 +254,8 @@ def myFunc(rknn_lite, IMG):
 
     IMG = cv2.cvtColor(IMG, cv2.COLOR_RGB2BGR)
     if boxes is not None:
+        # 从draw函数中引入返回值
         centers = draw(IMG, boxes, scores, classes)
-        return IMG, centers
-    return IMG, None
+        # 下面是返回值，可继续添加返回内容，返回到result列表中
+        return IMG, centers, boxes, scores, classes
+    return IMG, None, None, None, None

@@ -30,13 +30,19 @@ while cap.isOpened():
     if not ret:
         break
     pool.put(frame)
-    # 下一行中，result是myFunc函数的返回值（列表），flag是(True or False）
+    # 下一行中，result是myFunc函数的返回值（列表），flag是pool.get的判断标志(True or False）
     result, flag = pool.get()
     if flag == False:
         break
-    # 输出结果
-    cv2.imshow("test", result[0])
-    print("centers:\t", result[1])
+    # 输出结果，result是列表，内容详见myFunc函数
+    # result:return IMG, centers, boxes, scores, classes
+    picture = result[0]
+    centers = result[1]
+    boxes = result[2]
+    scores = result[3]
+    classes = result[4]
+    cv2.imshow("test", picture)
+    print("centers:\t", centers)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     if frames % 30 == 0:
