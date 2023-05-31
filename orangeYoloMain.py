@@ -35,14 +35,15 @@ while cap.isOpened():
     if flag == False:
         break
     # 输出结果，result是列表，内容详见myFunc函数
-    # result:return IMG, centers, boxes, scores, classes
     picture = result[0]
     centers = result[1]
     boxes = result[2]
     scores = result[3]
     classes = result[4]
-    cv2.imshow("test", picture)
-    print("centers:\t", centers)
+    for cl in classes:
+        if classes[cl] == 'W':
+            cv2.imshow("test", picture)
+            print("centers:\t", centers)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     if frames % 30 == 0:
