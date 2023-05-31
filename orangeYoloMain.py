@@ -8,10 +8,11 @@ cap = cv2.VideoCapture("./REC_for_testing.mp4")
 
 # 模型路径
 modelPath = "./rknnModel/GXv5s_RK3588_i8.rknn"
+CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
 # 线程数
 TPEs = 3
 # 初始化rknn池
-pool = rknnPoolExecutor(rknnModel=modelPath, TPEs=TPEs, func=myFunc)
+pool = rknnPoolExecutor(rknnModel=modelPath, TPEs=TPEs, myFunc=myFunc)
 
 # 初始化异步所需要的帧
 if cap.isOpened():
@@ -35,19 +36,22 @@ while cap.isOpened():
     if flag == False:
         break
     # 输出结果，result是列表，内容详见myFunc函数
-    picture = result[0]
-    centers = result[1]
-    boxes = result[2]
-    scores = result[3]
-    classes = result[4]
-    for cl in classes:
-        if classes[cl] == 'W':
-            cv2.imshow("test", picture)
-            print("centers:\t", centers)
+    if result is not None:
+        picture = result[0]
+        centers = result[1]
+        boxes = result[2]
+        scores = result[3]
+        classes = result[4]
+        cv2.imshow("test", picture)
+        if classes is not None:
+            for cl in classes:
+                if CLASSES[cl] == "W":
+                    print("center:\t", centers)
+                    print("class:\t", CLASSES[cl])
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     if frames % 30 == 0:
-        print("30帧平均帧率:\t", 30 / (time.time() - loopTime), "帧")
+        # print("30帧平均帧率:\t", 30 / (time.time() - loopTime), "帧")
         loopTime = time.time()
 
 print("总平均帧率\t", frames / (time.time() - initTime))

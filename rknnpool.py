@@ -34,12 +34,12 @@ def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", TPEs=1):
 
 
 class rknnPoolExecutor:
-    def __init__(self, rknnModel, TPEs, func):
+    def __init__(self, rknnModel, TPEs, myFunc):
         self.TPEs = TPEs
         self.queue = Queue()
         self.rknnPool = initRKNNs(rknnModel, TPEs)
         self.pool = ThreadPoolExecutor(max_workers=TPEs)
-        self.func = func
+        self.func = myFunc
         self.num = 0
 
     def put(self, frame):
