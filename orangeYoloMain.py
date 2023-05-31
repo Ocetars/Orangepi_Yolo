@@ -37,22 +37,26 @@ while cap.isOpened():
         break
     # 输出结果，result是列表，内容详见myFunc函数
     if result is not None:
-        picture = result[0]
+        outpic = result[0]
         centers = result[1]
         boxes = result[2]
         scores = result[3]
         classes = result[4]
-        cv2.imshow("test", picture)
+        
+        cv2.imshow("result", outpic)
         if classes is not None:
             for cl in classes:
                 if CLASSES[cl] == "W":
-                    print("center:\t", centers)
-                    print("class:\t", CLASSES[cl])
+                    if centers:
+                        x1 = centers[0][0]
+                        y1 = centers[0][1]
+                        print("center:\t",x1,y1)
+                        print("class:\t", CLASSES[cl])
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
-    if frames % 30 == 0:
-        # print("30帧平均帧率:\t", 30 / (time.time() - loopTime), "帧")
-        loopTime = time.time()
+    # if frames % 30 == 0:
+    #     print("30帧平均帧率:\t", 30 / (time.time() - loopTime), "帧")
+    #     loopTime = time.time()
 
 print("总平均帧率\t", frames / (time.time() - initTime))
 
