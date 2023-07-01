@@ -250,4 +250,5 @@ def myFunc(rknn_lite, IMG):
         centers = draw(IMG, boxes, scores, classes)
         # 下面是返回值，可继续添加返回内容，返回到result列表中
         return IMG, centers, boxes, scores, classes
-    return IMG, None, None, None, None
+    else:
+        return IMG, None, None, None, None
