@@ -4,6 +4,7 @@ from rknnpool import rknnPoolExecutor
 from func import myFunc
 
 cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
+# cap = cv2.VideoCapture("./REC_for_testing.mp4")
 # cap = cv2.VideoCapture(0)
 
 # 模型路径
@@ -47,13 +48,13 @@ while cap.isOpened():
         cv2.imshow("outpic", outpic)
         if classes is not None:
             for cl in classes:
-                # if CLASSES[cl] == "W":
-                if centers:
-                    # centers是一个列表，里面第[0]个元素是一个元组，元组中是中心点的坐标
-                    center_x = centers[0][0]
-                    center_y = centers[0][1]
-                    print("center:\t",center_x,center_y)
-                    print("class:\t", CLASSES[cl])
+                # if CLASSES[cl] == "W" and scores[cl] > 0.5:
+                    if centers:
+                        # centers是一个列表，里面第[0]个元素是一个元组，元组中是中心点的坐标
+                        center_x = centers[0][0]
+                        center_y = centers[0][1]
+                        print("center:\t",center_x,center_y)
+                        print("class:\t", CLASSES[cl])
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     # if frames % 30 == 0:
