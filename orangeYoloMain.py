@@ -3,9 +3,9 @@ import time
 from rknnpool import rknnPoolExecutor
 from func import myFunc
 
-cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
+# cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
 # cap = cv2.VideoCapture("./REC_for_testing.mp4")
-# cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)
 
 # 模型路径
 modelPath = "./rknnModel/2022S_RK3588_i8.rknn"
@@ -53,8 +53,12 @@ while cap.isOpened():
                         # centers是一个列表，里面第[0]个元素是一个元组，元组中是中心点的坐标
                         center_x = centers[0][0]
                         center_y = centers[0][1]
-                        print("center:\t",center_x,center_y)
+                        print("----------------------------")
                         print("class:\t", CLASSES[cl])
+                        print("center:\t",center_x,center_y)
+                        # print("score:\t",scores[cl])
+                        print("----------------------------")
+                        # print("\tclass:\t", CLASSES[cl],"center:\t", center_x, center_y, )
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     # if frames % 30 == 0:
