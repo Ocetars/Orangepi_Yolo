@@ -9,7 +9,6 @@ cap = cv2.VideoCapture("./REC_for_testing.mp4")
 # 模型路径
 modelPath = "./rknnModel/GXv5s_RK3588_i8.rknn"
 CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
-lable
 # 线程数
 TPEs = 3
 # 初始化rknn池
