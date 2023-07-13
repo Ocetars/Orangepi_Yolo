@@ -164,7 +164,43 @@ def yolov5_post_process(input_data):
     return np.concatenate(nboxes), np.concatenate(nclasses), np.concatenate(nscores)
 
 
+def draw(image, boxes, scores, classes, label="W", threshold=0.6):
+    centers = []
+    for box, score, cl in zip(boxes, scores, classes):
+        # 加入筛选条件，确定需要检测的目标
+        if CLASSES[cl] == label and score > threshold:
+            top, left, right, bottom = box
+            # print('class: {}, score: {}'.format(CLASSES[cl], score))
+            # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
+            top = int(top)  # 左上x1
+            left = int(left)  # 左上y1
+            right = int(right)  # 右下x2
+            bottom = int(bottom)  # 右下y2
+            x1 = top
+            y1 = left
+            x2 = right
+            y2 = bottom
+            # 在图像上绘制目标框
+            cv2.rectangle(image, (x1, y1), (x2, y2), (255, 0, 0), 2)
 
+            # 计算目标框的中心坐标
+            center_x = (x1 + x2) / 2
+            center_y = (y1 + y2) / 2
+            centers.append((center_x, center_y))
+
+            # 在图像上绘制目标中心
+            cv2.circle(image, (int(center_x), int(center_y)), 2, (0, 255, 0), -1)
+            # 在图像上绘制物体类别及置信度
+            cv2.putText(
+                image,
+                "{0} {1:.2f}".format(CLASSES[cl], score),
+                (x1, y1 - 6),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 0, 255),
+                2,
+            )
+    return centers
 
 
 def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
@@ -211,7 +247,9 @@ def myFunc(rknn_lite, IMG):
 
     IMG = cv2.cvtColor(IMG, cv2.COLOR_RGB2BGR)
     if boxes is not None:
+        # 从draw函数中引入返回值
+        centers = draw(IMG, boxes, scores, classes)
         # 下面是返回值，可继续添加返回内容，返回到result列表中
-        return IMG, boxes, scores, classes
+        return IMG, centers, boxes, scores, classes
     else:
         return IMG, None, None, None, None
