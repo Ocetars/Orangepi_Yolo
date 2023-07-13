@@ -2,11 +2,17 @@ import cv2
 import time
 from rknnpool import rknnPoolExecutor
 from func import myFunc
+import rospy
+from std_msgs.msg import String
+rospy.init_node('yolo_node')
+pub = rospy.Publisher('yolo_topic', String, queue_size=10)
+
 
 cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
 # cap = cv2.VideoCapture("./REC_for_testing.mp4")
 # cap = cv2.VideoCapture(0)
-
+# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 # 模型路径
 modelPath = "./rknnModel/2022S_RK3588_i8.rknn"
 # CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
@@ -15,7 +21,6 @@ CLASSES = ('RT', 'RR', 'RC', 'BT', 'BR', 'BC', 'A', 'X')
 TPEs = 3
 # 初始化rknn池
 pool = rknnPoolExecutor(rknnModel=modelPath, TPEs=TPEs, myFunc=myFunc)
-
 # 初始化异步所需要的帧
 if cap.isOpened():
     for i in range(TPEs + 1):
@@ -26,11 +31,14 @@ if cap.isOpened():
             exit(-1)
         pool.put(frame)
 
-def draw(image, boxes, scores, classes, label="A", threshold=0.6):
+def draw(image, boxes, scores, classes, threshold=0.6):
     centers = []
+    class_name = None
     for box, score, cl in zip(boxes, scores, classes):
         # 加入筛选条件，确定需要检测的目标
-        if CLASSES[cl] == label and score > threshold:
+        # if CLASSES[cl] == label and score > threshold:
+        if score > threshold:
+            class_name = CLASSES[cl]
             top, left, right, bottom = box
             # print('class: {}, score: {}'.format(CLASSES[cl], score))
             # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
@@ -62,7 +70,10 @@ def draw(image, boxes, scores, classes, label="A", threshold=0.6):
                 (0, 0, 255),
                 2,
             )
-    return centers, score
+    if class_name is not None:
+        return class_name, centers
+    else:
+        return None, None, None
 
 frames, loopTime, initTime = 0, time.time(), time.time()
 
@@ -83,16 +94,19 @@ while cap.isOpened():
         boxes = result[1]
         scores = result[2]
         classes = result[3]
-    
-        if classes is not None:
-            # 从draw函数中引入返回值
-            centers, score = draw(outpic, boxes, scores, classes)
-
-            print(  "class:\t", 'A',
-                    "\tcenters:\t", centers, 
-                    "\tscore:\t", score  )
-            
-            cv2.imshow("outpic", outpic)
+        
+    if classes is not None:
+        # 从draw函数中引入返回值
+        class_name, centers = draw(outpic, boxes, scores, classes)
+        if class_name is not None:
+            center_x = centers[0][0]
+            center_y = centers[0][1]
+            msg = "\tclass:\t" + class_name + "center:\t" + str(center_x) + "," + str(center_y)
+            rospy.loginfo(msg)
+            pub.publish(msg)
+        else:
+            rospy.logwarn("Invalid class index")
+    cv2.imshow("outpic", outpic)      
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     # if frames % 30 == 0:
