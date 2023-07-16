@@ -2,10 +2,6 @@ import cv2
 import time
 from rknnpool import rknnPoolExecutor
 from func import myFunc
-import rospy
-from std_msgs.msg import String
-rospy.init_node('yolo_node')
-pub = rospy.Publisher('yolo_topic', String, queue_size=10)
 
 
 cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
@@ -102,10 +98,7 @@ while cap.isOpened():
             center_x = centers[0][0]
             center_y = centers[0][1]
             msg = "\tclass:\t" + class_name + "center:\t" + str(center_x) + "," + str(center_y)
-            rospy.loginfo(msg)
-            pub.publish(msg)
-        else:
-            rospy.logwarn("Invalid class index")
+            print(msg)
     cv2.imshow("outpic", outpic)      
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
