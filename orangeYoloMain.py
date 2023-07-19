@@ -10,9 +10,10 @@ cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 # 模型路径
-modelPath = "./rknnModel/2022S_RK3588_i8.rknn"
+modelPath = "./rknnModel/2022s++_RK3588_i8.rknn"
+# modelPath = "./rknnModel/2022S_RK3588_i8.rknn"
 # CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
-CLASSES = ('RT', 'RR', 'RC', 'BT', 'BR', 'BC', 'A', 'X')
+CLASSES = ['B3', 'R4', 'R0', 'A', 'B0', 'R3', 'B4', 'X']
 # 线程数
 TPEs = 3
 # 初始化rknn池
@@ -69,7 +70,7 @@ def draw(image, boxes, scores, classes, threshold=0.6):
     if class_name is not None:
         return class_name, centers
     else:
-        return None, None, None
+        return None, None
 
 frames, loopTime, initTime = 0, time.time(), time.time()
 
@@ -97,7 +98,7 @@ while cap.isOpened():
         if class_name is not None:
             center_x = centers[0][0]
             center_y = centers[0][1]
-            msg = "\tclass:\t" + class_name + "center:\t" + str(center_x) + "," + str(center_y)
+            msg = "\tclass:\t" + class_name + "\tcenter:" + str(center_x) + "," + str(center_y)
             print(msg)
     cv2.imshow("outpic", outpic)      
     if cv2.waitKey(1) & 0xFF == ord("q"):

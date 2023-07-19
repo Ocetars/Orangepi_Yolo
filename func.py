@@ -6,7 +6,7 @@ import time
 OBJ_THRESH, NMS_THRESH, IMG_SIZE = 0.25, 0.45, 640
 
 # CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
-CLASSES = ('RT', 'RR', 'RC', 'BT', 'BR', 'BC', 'A', 'X')
+# CLASSES = ['B3', 'R4', 'R0', 'A', 'B0', 'R3', 'B4', 'X']
 
 # def sigmoid(x):
 #     return 1 / (1 + np.exp(-x))
