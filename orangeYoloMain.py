@@ -2,18 +2,24 @@ import cv2
 import time
 from rknnpool import rknnPoolExecutor
 from func import myFunc
-
+from multiprocessing.connection import Client
+import time
 
 cap = cv2.VideoCapture("./VID_20230712_172958.mp4")
-# cap = cv2.VideoCapture("./REC_for_testing.mp4")
 # cap = cv2.VideoCapture(0)
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 # 模型路径
 modelPath = "./rknnModel/2022s++_RK3588_i8.rknn"
-# modelPath = "./rknnModel/2022S_RK3588_i8.rknn"
 # CLASSES = ("TakeOff", "Car", "Concentric", "W", "Centre")
 CLASSES = ['B3', 'R4', 'R0', 'A', 'B0', 'R3', 'B4', 'X']
+# CLASSES = [ 'armor',
+#             'bridge',
+#             'fort',
+#             'H',
+#             'tank',
+#             'tent'  ]
+
 # 线程数
 TPEs = 3
 # 初始化rknn池
@@ -75,6 +81,8 @@ def draw(image, boxes, scores, classes, threshold=0.6):
 frames, loopTime, initTime = 0, time.time(), time.time()
 
 # 主函数
+client = Client(('127.0.0.1', 12880))
+
 while cap.isOpened():
     frames += 1
     ret, frame = cap.read()
@@ -100,14 +108,22 @@ while cap.isOpened():
             center_y = centers[0][1]
             msg = "\tclass:\t" + class_name + "\tcenter:" + str(center_x) + "," + str(center_y)
             print(msg)
-    cv2.imshow("outpic", outpic)      
+            # 进程间通信
+            data = (center_x,center_y,class_name)
+            client.send(data)
+            
+    cv2.imshow("outpic", outpic)
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
     # if frames % 30 == 0:
     #     print("30帧平均帧率:\t", 30 / (time.time() - loopTime), "帧")
     #     loopTime = time.time()
-
+    
+    
 print("总平均帧率\t", frames / (time.time() - initTime))
+
+
+
 
 cap.release()
 cv2.destroyAllWindows()
